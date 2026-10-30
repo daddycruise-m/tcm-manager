@@ -1,0 +1,190 @@
+.unit-manager-container{
+    width: 90%;
+    margin: 30px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.unit-header-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+}
+
+.unit-title-section{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.unit-title{
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.unit-actions{
+    display: flex;
+    gap: 12px;
+}
+
+/*Unit Cards Grid */
+
+.units-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.umit-card{
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.unit-card.active-unit{
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+.umit-card-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.unit-logo-box{
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(139, 92, 246, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    overflow: hidden;
+}
+
+.unit-logo-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.delete-unit-btn{
+    background: transparent;
+    border: none;
+    color: var(--accent-red);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.delete-unit-btn:hover{
+    opacity: 1;
+}
+
+.unit-name{
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.unit-meta{
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Worker Roster Section */
+
+.roaster-section{
+    padding: 24px;
+}
+
+.roaster-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.worker-table-wrapper{
+    overflow-x: auto;
+}
+
+.worker-table{
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.worker-table th,.worker-table td{
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.worker-table th{
+    color: var(--text-secondary);
+    font-style: 0.85rem;
+    text-transform: uppercase;
+}
+
+.served-btn{
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.served-btn.served{
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-green);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.served-btn.not-served{
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Charts Analytics Section */
+
+.analytics-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+}
+
+.chart-card{
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.chart-title{
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    align-self: flex-start;
+}
+
+/*Modal Styling */
+
+.modal-form{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}

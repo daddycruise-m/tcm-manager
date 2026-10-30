@@ -1,0 +1,53 @@
+.landing-container{
+    width: 90%;
+    margin: 40px auto; 
+}
+
+.landing-nav{
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.nav-link-btn{
+    background: transparent;
+    border:1px solid var(--glass-border);
+}
+
+.card-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.role-card{
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.icon-wrapper{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+}
+
+.card-title{
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+
+.card-subtext{
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.card-count{
+    font-size: 2.5rem;
+    margin-top: 10px;
+}

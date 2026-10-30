@@ -1,0 +1,242 @@
+/* 1. TABLET BREAKPOINT (MAX-WIDTH: 768PX) */
+
+@media (max-width: 768px){
+    /* Container Padding Adjustments */
+
+    .landing-container,
+    .members-container,
+    .unit-manager-container,
+    .leaders.container,
+    .analytics-container,
+    .report-generator-container,
+    .main-nav,
+    .tcm-header {
+        width: 95% !important;
+        padding: 16px !important;
+        margin: 12px auto !important;
+    }
+
+    /* Optimize Glass backdrop filter for lower-power mobile GPUs */
+
+    .glass-card,
+    .modal-overlay,
+    .glass-input{
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+    }
+
+    /* Header Optimization */
+
+    .tcm-header{
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .header-clock-container{
+        width: 100%;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px solid var(--glass-border);
+    }
+
+    /* Navigation Bar Touch Carousel */
+
+    .main-nav{
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .nav-links-group{
+        display: flex !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        padding-bottom: 8px !important;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-item-btn{
+        flex: 0 0 auto !important;
+        scroll-snap-align: start;
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* User Profile Badge */
+
+    .user-profile-badge{
+        justify-content: space-between;
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px solid var(--glass-border);
+    }
+
+    /* Filter & Search Bar Stacking */
+
+    .filter-bar{
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .search-box{
+        width: 100% !important;
+    }
+
+    .filter-tabs{
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .tab-btn{
+        flex: 1;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    /* Header Bars in Roster/Unit views */
+
+    .members-header-bar,
+    .leader-header-bar,
+    .unit-header-bar,
+    .analytics-header-bar,
+    .report-header-bar{
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+    }
+
+    .members-actions,
+    .unit-actions,
+    .leaders-actions,
+    .analytics-acions{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .members-actions button,
+    .unit-actions button,
+    .leaders-actions button,
+    .analytics-acions button{
+        flex: 1;
+        justify-content: center;
+    } 
+
+    /* Smooth Touch Scroll for Tables */
+
+    .roster-table-wrapper,
+    .worker-table-wrapper{
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+    }
+
+    /* Grid Adjustments */
+
+    .kpi-grid,
+    .leaders-stats-grid{
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .chart-grid-two,
+    .report-control-grid{
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Container holding all module checkboxes */
+.modules-checkbox-group {
+  display: flex;
+  flex-direction: column; /* Stacks each module row vertically */
+  gap: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Individual checkbox label row */
+.module-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-primary, #ffffff);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.module-checkbox-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.module-checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #c084fc;
+  cursor: pointer;
+}
+
+/* SMALL MOBILE PHONES (MAX-WIDTH: 480PX) */
+
+@media (max-width: 480px){
+    /* Stack Stat KPI Cards into single column */
+
+    .kpi-grid, .leaders-stats-grid, .members-stats-grid{
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Modal Dialog Full Screen fits */
+
+    .modal-content{
+        padding: 20px !important;
+        max-width: 100% !important;
+        border-radius: 12px !important;
+    }
+
+    .modal-title{
+        font-size: 1.25rem !important;
+    }
+
+    /* Table Cell Padding Reduction */
+
+    .members-table th,
+    .members-table td,
+    .leaders-table th,
+    .leaders-table td,
+    .worker-table th,
+    .worker-table td {
+        padding: 10px 8px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Attendance & Action Buttons */
+    .attendance-btn,
+    .served-btn{
+        padding: 5px 10px !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* Hide lower-priority columns on small phone screens to reduce clutter */
+
+    .members-table th:nth-child(4),
+    .members-table td:nth-child(4),
+    .leaders-table th:nth-child(4),
+    .leaders-table td:nth-child(4){
+        display: none; /* Hides Phone numbers on very small screen */
+    }
+
+    /* Document Preview Scaling */
+
+    .preview-panel{
+        padding: 16px !important;
+    }
+
+    .document-branding h1{
+        font-size: 1.3rem !important;
+    }
+}
