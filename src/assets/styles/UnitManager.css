@@ -1,3 +1,4 @@
+/* src/styles/UnitManager.css */
 .unit-manager-container{
     width: 90%;
     margin: 30px auto;
@@ -29,7 +30,7 @@
     gap: 12px;
 }
 
-/*Unit Cards Grid */
+/* Unit Cards Grid */
 
 .units-grid{
     display: grid;
@@ -37,7 +38,7 @@
     gap: 20px;
 }
 
-.umit-card{
+.unit-card{
     padding: 20px;
     cursor: pointer;
     display: flex;
@@ -52,7 +53,7 @@
     box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
 }
 
-.umit-card-header{
+.unit-card-header{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -103,11 +104,11 @@
 
 /* Worker Roster Section */
 
-.roaster-section{
+.roster-section{
     padding: 24px;
 }
 
-.roaster-header{
+.roster-header{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -124,40 +125,57 @@
     text-align: left;
 }
 
-.worker-table th,.worker-table td{
+.worker-table th, .worker-table td{
     padding: 14px 16px;
     border-bottom: 1px solid var(--glass-border);
 }
 
 .worker-table th{
     color: var(--text-secondary);
-    font-style: 0.85rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
 }
 
-.served-btn{
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: none;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
+/* Two-Button Service Status Styling */
+.status-btn-group {
+    display: flex;
+    gap: 6px;
+}
+
+.status-action-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
 }
 
-.served-btn.served{
-    background: rgba(16, 185, 129, 0.2);
-    color: var(--accent-green);
-    border: 1px solid rgba(16, 185, 129, 0.4);
+.status-action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
 }
 
-.served-btn.not-served{
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+/* Active Served Button (Green Highlight) */
+.status-action-btn.served-option.active-served {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
+    color: #34d399 !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+/* Active Not Button (Red Highlight) */
+.status-action-btn.not-option.active-not {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    color: #f87171 !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
 /* Charts Analytics Section */
@@ -181,10 +199,161 @@
     align-self: flex-start;
 }
 
-/*Modal Styling */
+/* Modal Styling */
 
 .modal-form{
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+/* --- Centered Headings & Responsive Layout Fixes --- */
+.centered-heading,
+.roster-header h3 {
+    text-align: center !important;
+    width: 100%;
+}
+
+.mobile-roster-cards {
+    display: none;
+}
+
+.desktop-roster-view {
+    display: block;
+}
+
+/* Mobile View Centering & Facebook Profile Cards (Screens 768px wide and below) */
+@media (max-width: 768px) {
+    /* Hide desktop table on mobile */
+    .desktop-roster-view {
+        display: none !important;
+    }
+
+    /* Show mobile profile cards view */
+    .mobile-roster-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+        width: 100%;
+    }
+
+    .roster-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .unit-title-section {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+
+    /* Facebook Profile Card Layout */
+    .mobile-profile-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .mobile-profile-header {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        gap: 12px;
+        cursor: pointer;
+    }
+
+    .profile-avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+        flex-shrink: 0;
+    }
+
+    .profile-preview-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .profile-preview-info h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+    }
+
+    .profile-preview-info span {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .profile-expand-icon {
+        color: var(--text-secondary);
+    }
+
+    .mobile-profile-dropdown {
+        padding: 14px 16px;
+        background: rgba(15, 23, 42, 0.6);
+        border-top: 1px solid var(--glass-border);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .dropdown-info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding-bottom: 6px;
+    }
+
+    .dropdown-info-row strong {
+        color: #fff;
+    }
+
+    .dropdown-attendance-section {
+        display: flex;
+        flex-direction: column;
+        margin-top: 4px;
+    }
+
+    .dropdown-actions-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .dropdown-actions-row button {
+        flex: 1;
+        padding: 8px;
+        font-size: 0.8rem;
+        justify-content: center;
+    }
+
+    .action-edit-btn {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .action-delete-btn {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
 }

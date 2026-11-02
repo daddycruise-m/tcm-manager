@@ -1,3 +1,4 @@
+/* src/styles/Members.css */
 .members-container{
     width: 90%;
     margin: 30px auto;
@@ -160,7 +161,7 @@
     text-transform: uppercase;
 }
 
-.members-identity{
+.member-identity{
     display: flex;
     align-items: center;
     gap: 12px;
@@ -192,7 +193,7 @@
 
 .unit-tag{
     display: inline-block;
-    padding: 4px 10px ;
+    padding: 4px 10px;
     border-radius: 12px;
     font-weight: 600;
     background: rgba(139, 92, 246, 0.15);
@@ -201,7 +202,7 @@
 }
 
 .attendance-btn{
-    padding: 6px 14px ;
+    padding: 6px 14px;
     border-radius: 20px;
     border: none;
     font-weight: 600;
@@ -240,4 +241,165 @@
 
 .icon-action-btn:hover{
     color: #ef4444;
+}
+
+/* --- Centered Headings & Responsive Mobile Card Layout --- */
+.mobile-roster-cards {
+    display: none;
+}
+
+.desktop-roster-view {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    /* Hide desktop table on mobile */
+    .desktop-roster-view {
+        display: none !important;
+    }
+
+    /* Show mobile profile cards */
+    .mobile-roster-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+        width: 100%;
+    }
+
+    .members-header-bar {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .members-title-section {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+
+    /* Facebook Profile Card Styling */
+    .mobile-profile-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .mobile-profile-header {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        gap: 12px;
+        cursor: pointer;
+    }
+
+    .profile-avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        flex-shrink: 0;
+    }
+
+    .profile-preview-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .profile-preview-info h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+    }
+
+    .profile-preview-info span {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .profile-expand-icon {
+        color: var(--text-secondary);
+    }
+
+    .mobile-profile-dropdown {
+        padding: 14px 16px;
+        background: rgba(15, 23, 42, 0.6);
+        border-top: 1px solid var(--glass-border);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .dropdown-info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding-bottom: 6px;
+    }
+
+    .dropdown-info-row strong {
+        color: #fff;
+    }
+
+    .dropdown-attendance-section {
+        display: flex;
+        flex-direction: column;
+        margin-top: 4px;
+    }
+}
+
+/* Two-Button Service Status Styling */
+.status-btn-group {
+    display: flex;
+    gap: 6px;
+}
+
+.status-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+}
+
+.status-action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+/* Active Served Button (Green Highlight) */
+.status-action-btn.served-option.active-served {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
+    color: #34d399 !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+/* Active Not Button (Red Highlight) */
+.status-action-btn.not-option.active-not {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    color: #f87171 !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }

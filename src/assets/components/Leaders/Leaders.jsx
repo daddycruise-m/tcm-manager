@@ -2,7 +2,8 @@
 import React, { useState, useRef } from "react";
 import {
   ShieldCheck, UserPlus, Download, Search, CheckCircle2, 
-  XCircle, Trash2, Award, CalendarCheck, Users, Activity, X, Edit
+  XCircle, Trash2, Award, CalendarCheck, Users, Activity, X, Edit,
+  ChevronDown, ChevronUp
 } from 'lucide-react';
 
 import html2canvas from 'html2canvas';
@@ -11,10 +12,36 @@ import '../../styles/Leaders.css';
 import '../../styles/LoginModal.css';
 import { useTCM } from '../../context/TCMContext';
 
+// Helper: Check if service status window is open (Sunday 00:00 to Wednesday 23:59:59)
+const isAttendanceWindowOpen = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday
+    return day >= 0 && day <= 3;
+};
+
+// Helper: Get unique ISO week key for weekly tracking (e.g., "2026-W44")
+const getWeekKey = () => {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const pastDaysOfYear = (now - startOfYear) / 86400000;
+    const weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+    return `${now.getFullYear()}-W${weekNum}`;
+};
+
+// Helper: Get initials for avatar (e.g. "Pastor Samuel" -> "PS")
+const getInitials = (name) => {
+    if (!name) return 'L';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+};
+
 export default function Leaders() {
   const exportRef = useRef();
 
-  const { leaders, addLeader, updateLeader, updateLeaderAttendance, deleteLeader, currentMonthKey } = useTCM();
+  const { leaders, addLeader, updateLeader, deleteLeader, currentMonthKey } = useTCM();
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,10 +49,16 @@ export default function Leaders() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingLeader, setEditingLeader] = useState(null);
+  
+  // Track which leader card is expanded on mobile view
+  const [expandedLeaderId, setExpandedLeaderId] = useState(null);
 
   const [newLeader, setNewLeader] = useState({
     name: '', position: '', phone: '', gender: 'Male', dob: '', address: ''
   });
+
+  const currentWeek = getWeekKey();
+  const windowOpen = isAttendanceWindowOpen();
 
   const calculateAge = (dobString) => {
     if (!dobString) return 'N/A';
@@ -44,7 +77,11 @@ export default function Leaders() {
     if (leader.attendanceHistory && leader.attendanceHistory[selectedMonth] !== undefined) {
       return leader.attendanceHistory[selectedMonth];
     }
-    return selectedMonth === currentMonthKey ? (leader.monthAttendances || 0) : 0;
+    return Number(leader.monthAttendances) || 0;
+  };
+
+  const toggleExpandLeader = (leaderId) => {
+    setExpandedLeaderId(expandedLeaderId === leaderId ? null : leaderId);
   };
 
   const totalLeaders = leaders ? leaders.length : 0;
@@ -81,20 +118,54 @@ export default function Leaders() {
     setIsAddModalOpen(true);
   };
 
-  const handleToggleAttendance = (leader) => {
-    const currentCount = getLeaderMonthCount(leader);
-    const nextPresent = !leader.presentThisWeek;
-    const newCount = nextPresent 
-      ? currentCount + 1 
-      : Math.max(0, currentCount - 1);
-
-    updateLeaderAttendance(leader.id, nextPresent, newCount);
-  };
-
   const handleDeleteLeader = (id) => {
     if (window.confirm('Are you sure you want to remove this leader?')) {
       deleteLeader(id);
     }
+  };
+
+  // Handle Status Selection: 'served' or 'not' (Sanitized against undefined Firebase crashes)
+  const handleStatusSelect = (leader, status) => {
+    if (!windowOpen) {
+      alert('Service status updates are locked from Thursday through Saturday night.');
+      return;
+    }
+
+    const weeklyStatusMap = leader.weeklyStatus || {};
+    const prevStatus = weeklyStatusMap[currentWeek] || null;
+
+    if (prevStatus === status) return; // No change
+
+    let currentMonthCount = getLeaderMonthCount(leader);
+
+    // Adjust monthly count
+    if (status === 'served' && prevStatus !== 'served') {
+        currentMonthCount += 1;
+    } else if (prevStatus === 'served' && status !== 'served') {
+        currentMonthCount = Math.max(0, currentMonthCount - 1);
+    }
+
+    const updatedWeeklyStatus = {
+        ...weeklyStatusMap,
+        [currentWeek]: status
+    };
+
+    const updatedAttendanceHistory = {
+        ...(leader.attendanceHistory || {}),
+        [selectedMonth]: currentMonthCount
+    };
+
+    updateLeader(leader.id, {
+        name: leader.name || '',
+        position: leader.position || '',
+        phone: leader.phone || '',
+        address: leader.address || '',
+        dob: leader.dob || '',
+        gender: leader.gender || 'Male',
+        monthAttendances: Number(currentMonthCount) || 0,
+        weeklyStatus: updatedWeeklyStatus,
+        attendanceHistory: updatedAttendanceHistory
+    });
   };
 
   const handleSaveLeader = (e) => {
@@ -110,7 +181,7 @@ export default function Leaders() {
       addLeader({
         ...newLeader,
         monthAttendances: 0,
-        presentThisWeek: false,
+        weeklyStatus: {},
         attendanceHistory: { [currentMonthKey]: 0 }
       });
     }
@@ -143,7 +214,7 @@ export default function Leaders() {
           <div>
             <h2 className="leaders-title">Leaders Management Hub ({selectedMonth})</h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Track leadership positions, engagements (3-attendance threshold), and active ratios
+              Track leadership positions, engagements (3-attendance threshold), and active ratios {windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)'}
             </p>
           </div>
         </div>
@@ -240,7 +311,8 @@ export default function Leaders() {
 
       {/* Roster & Printable Table Area */}
       <div className="glass-card roster-card" ref={exportRef}>
-        <div className="roster-table-wrapper">
+        {/* Desktop Table View */}
+        <div className="roster-table-wrapper desktop-roster-view">
           <table className="leaders-table">
             <thead>
               <tr>
@@ -251,7 +323,7 @@ export default function Leaders() {
                 <th>Address</th>
                 <th>Monthly Log</th>
                 <th>Overall Status</th>
-                <th>Sunday Attendance</th>
+                <th>Service Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -259,6 +331,8 @@ export default function Leaders() {
               {filteredLeaders.map(leader => {
                 const monthCount = getLeaderMonthCount(leader);
                 const isActive = monthCount >= 3;
+                const leaderWeeklyStatus = leader.weeklyStatus?.[currentWeek] || null;
+
                 return (
                   <tr key={leader.id}>
                     <td style={{ fontWeight: 600 }}>{leader.name}</td>
@@ -270,20 +344,31 @@ export default function Leaders() {
                     <td>{calculateAge(leader.dob)} yrs ({leader.gender})</td>
                     <td>{leader.phone || 'N/A'}</td>
                     <td>{leader.address || 'N/A'}</td>
-                    <td>{monthCount} Services</td>
+                    <td><strong>{monthCount} served</strong></td>
                     <td>
                       <span className={`status-badge ${isActive ? 'active' : 'inactive'}`}>
                         {isActive ? 'Active Leader' : 'Inactive'}
                       </span>
                     </td>
                     <td>
-                      <button
-                        className={`attendance-btn ${leader.presentThisWeek ? 'present' : 'absent'}`}
-                        onClick={() => handleToggleAttendance(leader)}
-                      >
-                        {leader.presentThisWeek ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                        {leader.presentThisWeek ? 'Present' : 'Absent'}
-                      </button>
+                      <div className="status-btn-group" style={{ display: 'flex', gap: '6px' }}>
+                        <button 
+                          type="button"
+                          className={`status-action-btn served-option ${leaderWeeklyStatus === 'served' ? 'active-served' : ''}`}
+                          onClick={() => handleStatusSelect(leader, 'served')}
+                          title={windowOpen ? "Mark as Served" : "Locked (Sun-Wed)"}
+                        >
+                          <CheckCircle2 size={14} /> Served
+                        </button>
+                        <button 
+                          type="button"
+                          className={`status-action-btn not-option ${leaderWeeklyStatus === 'not' ? 'active-not' : ''}`}
+                          onClick={() => handleStatusSelect(leader, 'not')}
+                          title={windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)"}
+                        >
+                          <XCircle size={14} /> Not
+                        </button>
+                      </div>
                     </td>
                     <td>
                       <div className="action-btn-group" style={{ display: 'flex', gap: '6px' }}>
@@ -307,6 +392,96 @@ export default function Leaders() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Facebook Profile Dropdown List View */}
+        <div className="mobile-roster-cards">
+          {filteredLeaders.map(leader => {
+            const monthCount = getLeaderMonthCount(leader);
+            const isActive = monthCount >= 3;
+            const leaderWeeklyStatus = leader.weeklyStatus?.[currentWeek] || null;
+            const isExpanded = expandedLeaderId === leader.id;
+
+            return (
+              <div key={leader.id} className="mobile-profile-card">
+                {/* Clickable Header (Facebook Style Preview) */}
+                <div className="mobile-profile-header" onClick={() => toggleExpandLeader(leader.id)}>
+                  <div className="profile-avatar-circle">
+                    {getInitials(leader.name)}
+                  </div>
+                  <div className="profile-preview-info">
+                    <h4>{leader.name}</h4>
+                    <span>{calculateAge(leader.dob)} yrs ({leader.gender}) • Tap to view details</span>
+                  </div>
+                  <div className="profile-expand-icon">
+                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </div>
+                </div>
+
+                {/* Expandable Dropdown Details */}
+                {isExpanded && (
+                  <div className="mobile-profile-dropdown">
+                    <div className="dropdown-info-row">
+                      <span>Position:</span>
+                      <strong>{leader.position}</strong>
+                    </div>
+                    <div className="dropdown-info-row">
+                      <span>Phone:</span>
+                      <strong>{leader.phone || 'N/A'}</strong>
+                    </div>
+                    <div className="dropdown-info-row">
+                      <span>Address:</span>
+                      <strong>{leader.address || 'N/A'}</strong>
+                    </div>
+                    <div className="dropdown-info-row">
+                      <span>Monthly Log:</span>
+                      <strong>{monthCount} Services</strong>
+                    </div>
+                    <div className="dropdown-info-row">
+                      <span>Overall Status:</span>
+                      <span className={`status-badge ${isActive ? 'active' : 'inactive'}`} style={{ padding: '2px 8px', fontSize: '0.7rem' }}>
+                        {isActive ? 'Active Leader' : 'Inactive'}
+                      </span>
+                    </div>
+
+                    <div className="dropdown-attendance-section">
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Service Status:</label>
+                      <div className="status-btn-group" style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                        <button 
+                          type="button"
+                          className={`status-action-btn served-option ${leaderWeeklyStatus === 'served' ? 'active-served' : ''}`}
+                          onClick={() => handleStatusSelect(leader, 'served')}
+                        >
+                          <CheckCircle2 size={14} /> Served
+                        </button>
+                        <button 
+                          type="button"
+                          className={`status-action-btn not-option ${leaderWeeklyStatus === 'not' ? 'active-not' : ''}`}
+                          onClick={() => handleStatusSelect(leader, 'not')}
+                        >
+                          <XCircle size={14} /> Not
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="dropdown-actions-row">
+                      <button className="glass-btn action-edit-btn" onClick={() => handleOpenEditLeader(leader)}>
+                        <Edit size={14} style={{ marginRight: 4 }} /> Edit
+                      </button>
+                      <button className="glass-btn action-delete-btn" onClick={() => handleDeleteLeader(leader.id)}>
+                        <Trash2 size={14} style={{ marginRight: 4 }} /> Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {filteredLeaders.length === 0 && (
+            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>
+              No leadership records matched your search query.
+            </p>
+          )}
         </div>
       </div>
 

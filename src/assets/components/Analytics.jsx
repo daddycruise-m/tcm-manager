@@ -15,9 +15,22 @@ import jsPDF from "jspdf";
 import '../styles/Analytics.css';
 import { useTCM } from '../context/TCMContext';
 
+// Helper: Dynamically generate the last 6 months ending with the current month (e.g., Jun -> Nov for Nov 2026)
+const getLast6Months = () => {
+    const months = [];
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthLabel = d.toLocaleString('default', { month: 'short' }); // "Jun", "Jul", ..., "Nov"
+        months.push(monthLabel);
+    }
+    return months;
+};
+
 export default function Analytics() {
     const exportRef = useRef();
-    const [selectedQuarter, setSelectedQuarter] = useState('Q3-2026');
+    const [selectedQuarter, setSelectedQuarter] = useState('Q4-2026');
 
     // Pull live state from TCMContext
     const { members = [], workers = [], leaders = [], units = [] } = useTCM();
@@ -55,15 +68,14 @@ export default function Analytics() {
         { name: 'Inactive Leaders (< 3)', value: inactiveLeadersCount, color: '#ef4444' },
     ];
 
-    // Attendance Trend Trajectory (Sunday Services Only)
-    const attendanceTrendData = [
-        { month: 'May', SundayService: Math.round(sundayPresent * 0.6) },
-        { month: 'Jun', SundayService: Math.round(sundayPresent * 0.7) },
-        { month: 'Jul', SundayService: Math.round(sundayPresent * 0.8) },
-        { month: 'Aug', SundayService: Math.round(sundayPresent * 0.9) },
-        { month: 'Sep', SundayService: Math.round(sundayPresent * 0.95) },
-        { month: 'Oct', SundayService: sundayPresent },
-    ];
+    // Dynamic 6-Month Attendance Trend Trajectory ending in current month (Nov 2026)
+    const monthLabels = getLast6Months();
+    const multipliers = [0.6, 0.7, 0.8, 0.9, 0.95, 1.0];
+
+    const attendanceTrendData = monthLabels.map((month, idx) => ({
+        month: month,
+        SundayService: Math.round(sundayPresent * multipliers[idx])
+    }));
 
     // PDF Export Functionality
     const handleExportPDF = async () => {
@@ -97,6 +109,7 @@ export default function Analytics() {
 
                 <div className="analtyics-actions">
                     <select className="timeframe-select" value={selectedQuarter} onChange={(e) => setSelectedQuarter(e.target.value)}>
+                        <option value="Q4-2026">Q4 2026 Summary</option>
                         <option value="Q3-2026">Q3 2026 Summary</option>
                         <option value="Q2-2026">Q2 2026 Summary</option>
                         <option value="YTD-2026">Year to Date (2026)</option>

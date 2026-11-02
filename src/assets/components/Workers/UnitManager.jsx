@@ -2,7 +2,7 @@
 import React, { useState } from 'react'; 
 import {
     Plus, Trash2, Check, X, UserPlus, Layers, BarChart2, PieChart as PieIcon, CheckCircle2,
-    XCircle, Edit
+    XCircle, Edit, Lock, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 import {
@@ -12,8 +12,34 @@ import '../../styles/UnitManager.css';
 import '../../styles/LoginModal.css';
 import { useTCM } from '../../context/TCMContext';
 
+// Helper: Check if service status window is open (Sunday 00:00 to Wednesday 23:59:59)
+const isAttendanceWindowOpen = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday
+    return day >= 0 && day <= 3;
+};
+
+// Helper: Get unique ISO week key for weekly tracking (e.g., "2026-W44")
+const getWeekKey = () => {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const pastDaysOfYear = (now - startOfYear) / 86400000;
+    const weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+    return `${now.getFullYear()}-W${weekNum}`;
+};
+
+// Helper: Get initials for avatar (e.g. "Major Faith" -> "MF")
+const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+};
+
 export default function UnitManager() {
-    const { units, addUnit, deleteUnit, workers, addWorker, updateWorker, deleteWorker, updateWorkerServed, currentMonthKey } = useTCM();
+    const { units, addUnit, deleteUnit, workers, addWorker, updateWorker, deleteWorker, currentMonthKey } = useTCM();
 
     const [selectedUnitId, setSelectedUnitId] = useState('1');
     const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
@@ -21,6 +47,9 @@ export default function UnitManager() {
     const [isAddUnitOpen, setIsAddUnitOpen] = useState(false);
     const [isAddWorkerOpen, setIsAddWorkerOpen] = useState(false);
     const [editingWorker, setEditingWorker] = useState(null);
+
+    // Track which worker cards are expanded on mobile view
+    const [expandedWorkerId, setExpandedWorkerId] = useState(null);
 
     const [newUnitName, setNewUnitName] = useState(''); 
     const [newUnitLogo, setNewUnitLogo] = useState('');
@@ -32,12 +61,19 @@ export default function UnitManager() {
     const activeUnit = units.find(u => u.id === selectedUnitId) || units[0];
     const activeWorkers = (workers || []).filter(w => w.unitId === selectedUnitId);
 
-    // Helper to get worker service count for the currently selected month
+    const currentWeek = getWeekKey();
+    const windowOpen = isAttendanceWindowOpen();
+
+    // Helper to get worker service count strictly from attendance history for the selected month, defaulting to 0
     const getWorkerMonthCount = (worker) => {
         if (worker.attendanceHistory && worker.attendanceHistory[selectedMonth] !== undefined) {
             return worker.attendanceHistory[selectedMonth];
         }
-        return selectedMonth === currentMonthKey ? (worker.monthServices || worker.monthService || 0) : 0;
+        return 0;
+    };
+
+    const toggleExpandWorker = (workerId) => {
+        setExpandedWorkerId(expandedWorkerId === workerId ? null : workerId);
     };
 
     // Calculate active stats based on the selected month's history (Threshold: 1+ services)
@@ -97,12 +133,49 @@ export default function UnitManager() {
         }
     };
 
-    const handleToggleServed = (worker) => {
-        const currentCount = getWorkerMonthCount(worker);
-        const nextServed = !worker.served;
-        const newCount = nextServed ? currentCount + 1 : Math.max(0, currentCount - 1);
+    // Handle Status Selection: 'served' or 'not' (Fully sanitized to prevent undefined Firebase crashes)
+    const handleStatusSelect = (worker, status) => {
+        if (!windowOpen) {
+            alert('Service status updates are locked from Thursday through Saturday night.');
+            return;
+        }
 
-        updateWorkerServed(worker.id, nextServed, newCount);
+        const weeklyStatusMap = worker.weeklyStatus || {};
+        const prevStatus = weeklyStatusMap[currentWeek] || null;
+
+        if (prevStatus === status) return; // No change
+
+        let currentMonthCount = getWorkerMonthCount(worker);
+
+        // Adjust monthly count
+        if (status === 'served' && prevStatus !== 'served') {
+            currentMonthCount += 1;
+        } else if (prevStatus === 'served' && status !== 'served') {
+            currentMonthCount = Math.max(0, currentMonthCount - 1);
+        }
+
+        const updatedWeeklyStatus = {
+            ...weeklyStatusMap,
+            [currentWeek]: status
+        };
+
+        const updatedAttendanceHistory = {
+            ...(worker.attendanceHistory || {}),
+            [selectedMonth]: currentMonthCount
+        };
+
+        // Explicitly construct clean properties to guarantee ZERO undefined values reach Firebase
+        updateWorker(worker.id, {
+            name: worker.name || '',
+            gender: worker.gender || 'Male',
+            phone: worker.phone || '',
+            address: worker.address || '',
+            dob: worker.dob || '',
+            unitId: worker.unitId || selectedUnitId,
+            monthServices: Number(currentMonthCount) || 0,
+            weeklyStatus: updatedWeeklyStatus,
+            attendanceHistory: updatedAttendanceHistory
+        });
     };
 
     const handleSaveWorker = (e) => {
@@ -118,8 +191,8 @@ export default function UnitManager() {
             addWorker({
                 ...newWorker,
                 unitId: selectedUnitId,
-                served: false,
                 monthServices: 0,
+                weeklyStatus: {},
                 attendanceHistory: { [currentMonthKey]: 0 }
             });
         }
@@ -190,11 +263,11 @@ export default function UnitManager() {
 
             {/* Selected Unit Workers Roster */}
             <div className="glass-card roster-section">
-                <div className="roster-header">
+                <div className="roster-header text-center-mobile">
                     <div>
-                        <h3>{activeUnit?.logo} {activeUnit?.name} Roster ({selectedMonth})</h3>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                            Viewing records for {selectedMonth}
+                        <h3 className="centered-heading">{activeUnit?.logo} {activeUnit?.name} Roster ({selectedMonth})</h3>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }} className="text-center-mobile">
+                            Viewing records for {selectedMonth} {windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)'}
                         </p>
                     </div>
 
@@ -203,7 +276,8 @@ export default function UnitManager() {
                     </button>
                 </div>
 
-                <div className="worker-table-wrapper">
+                {/* Desktop Table View */}
+                <div className="worker-table-wrapper desktop-roster-view">
                     <table className="worker-table">
                         <thead>
                             <tr>
@@ -219,21 +293,34 @@ export default function UnitManager() {
                         <tbody>
                             {activeWorkers.map(worker => {
                                 const monthCount = getWorkerMonthCount(worker);
+                                const workerWeeklyStatus = worker.weeklyStatus?.[currentWeek] || null;
+
                                 return (
                                     <tr key={worker.id}>
                                         <td style={{ fontWeight: 600 }}>{worker.name}</td>
                                         <td>{worker.gender}</td>
                                         <td>{worker.phone || 'N/A'}</td>
                                         <td>{worker.address || 'N/A'}</td>
-                                        <td>{monthCount} served</td>
+                                        <td><strong>{monthCount} served</strong></td>
                                         <td>
-                                            <button 
-                                                className={`served-btn ${worker.served ? 'served' : 'not-served'}`} 
-                                                onClick={() => handleToggleServed(worker)}
-                                            >
-                                                {worker.served ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                                                {worker.served ? 'Served' : 'Not'}
-                                            </button>
+                                            <div className="status-btn-group" style={{ display: 'flex', gap: '6px' }}>
+                                                <button 
+                                                    type="button"
+                                                    className={`status-action-btn served-option ${workerWeeklyStatus === 'served' ? 'active-served' : ''}`}
+                                                    onClick={() => handleStatusSelect(worker, 'served')}
+                                                    title={windowOpen ? "Mark as Served" : "Locked (Sun-Wed)"}
+                                                >
+                                                    <CheckCircle2 size={14} /> Served
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    className={`status-action-btn not-option ${workerWeeklyStatus === 'not' ? 'active-not' : ''}`}
+                                                    onClick={() => handleStatusSelect(worker, 'not')}
+                                                    title={windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)"}
+                                                >
+                                                    <XCircle size={14} /> Not
+                                                </button>
+                                            </div>
                                         </td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '6px' }}>
@@ -258,12 +345,91 @@ export default function UnitManager() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Mobile Facebook Profile Dropdown List View */}
+                <div className="mobile-roster-cards">
+                    {activeWorkers.map(worker => {
+                        const monthCount = getWorkerMonthCount(worker);
+                        const workerWeeklyStatus = worker.weeklyStatus?.[currentWeek] || null;
+                        const isExpanded = expandedWorkerId === worker.id;
+
+                        return (
+                            <div key={worker.id} className="mobile-profile-card">
+                                {/* Clickable Header (Facebook Style Preview) */}
+                                <div className="mobile-profile-header" onClick={() => toggleExpandWorker(worker.id)}>
+                                    <div className="profile-avatar-circle">
+                                        {getInitials(worker.name)}
+                                    </div>
+                                    <div className="profile-preview-info">
+                                        <h4>{worker.name}</h4>
+                                        <span>{worker.gender} • Tap to view details</span>
+                                    </div>
+                                    <div className="profile-expand-icon">
+                                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                    </div>
+                                </div>
+
+                                {/* Expandable Dropdown Details */}
+                                {isExpanded && (
+                                    <div className="mobile-profile-dropdown">
+                                        <div className="dropdown-info-row">
+                                            <span>Phone:</span>
+                                            <strong>{worker.phone || 'N/A'}</strong>
+                                        </div>
+                                        <div className="dropdown-info-row">
+                                            <span>Address:</span>
+                                            <strong>{worker.address || 'N/A'}</strong>
+                                        </div>
+                                        <div className="dropdown-info-row">
+                                            <span>Monthly Services:</span>
+                                            <strong>{monthCount} served</strong>
+                                        </div>
+
+                                        <div className="dropdown-attendance-section">
+                                            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Service Status:</label>
+                                            <div className="status-btn-group" style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                                                <button 
+                                                    type="button"
+                                                    className={`status-action-btn served-option ${workerWeeklyStatus === 'served' ? 'active-served' : ''}`}
+                                                    onClick={() => handleStatusSelect(worker, 'served')}
+                                                >
+                                                    <CheckCircle2 size={14} /> Served
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    className={`status-action-btn not-option ${workerWeeklyStatus === 'not' ? 'active-not' : ''}`}
+                                                    onClick={() => handleStatusSelect(worker, 'not')}
+                                                >
+                                                    <XCircle size={14} /> Not
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="dropdown-actions-row">
+                                            <button className="glass-btn action-edit-btn" onClick={() => handleOpenEditWorker(worker)}>
+                                                <Edit size={14} style={{ marginRight: 4 }} /> Edit
+                                            </button>
+                                            <button className="glass-btn action-delete-btn" onClick={() => handleDeleteWorker(worker.id)}>
+                                                <Trash2 size={14} style={{ marginRight: 4 }} /> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                    {activeWorkers.length === 0 && (
+                        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>
+                            No workers registered in this unit yet.
+                        </p>
+                    )}
+                </div>
             </div>
 
             {/* Dynamic Charts Section */}
             <div className="analytics-grid" style={{ marginTop: 24 }}>
                 <div className="glass-card chart-card">
-                    <h4 className="chart-title" style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+                    <h4 className="chart-title centered-heading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                         <PieIcon size={18} color="#8b5cf6" style={{ marginRight: 6 }} />
                         {activeUnit?.name} Activity Distribution ({selectedMonth})
                     </h4>
