@@ -1,136 +1,118 @@
 .report-generator-container {
-    width: 90%;
-    margin: 30px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-}
-
-.report-header-bar{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-}
-
-.report-title-section{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.report-title{
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-/* Control Panel Grid */
-
-.report-control-grid{
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 24px;
-}
-
-@media (max-width: 992px){
-    .report-control-grid{
-        grid-template-columns: 1fr;
-    }
-}
-
-.config-panel{
-    padding: 24px;
+    width: 95%;
+    max-width: 1200px;
+    margin: 15px auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.config-section-title{
+.report-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.report-title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.report-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+/* Top Configuration Panel Grid */
+.config-panel-top {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgba(15, 23, 42, 0.75);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+}
+
+.config-section-title {
     font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
     color: var(--text-primary);
 }
 
-.checkbox-group{
+.form-group {
     display: flex;
-    font-display: column;
-    gap: 12px;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.checkbox-label{
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.form-label {
     font-size: 0.85rem;
     color: var(--text-secondary);
-    cursor: pointer;
-    user-select: none;
 }
 
-.checkbox-label input[ type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--accent-purple);
-    cursor: pointer;
-}
-
-/* Report Peview Document Canvas */
-
-.preview-panel{
-    padding: 36px;
+/* Report Preview Document Canvas */
+.preview-panel {
+    padding: 20px;
     background: #0f172a;
     border-radius: 16px;
     border: 1px solid var(--glass-border);
-    box-shadow: 0 10px 30px rgba (0,0,0, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 24px;
     color: var(--text-primary);
+    overflow-x: hidden;
 }
 
-.document-header{
+.document-header {
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 20px;
+    padding-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.document-branding h1{
-    font-size: 1.8rem;
+.document-branding h1 {
+    font-size: 1.5rem;
     font-weight: 800;
     background: linear-gradient(to right, #c084fc, #60a5fa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.document-branding p{
-    font-size: 0.85rem;
+.document-branding p {
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
-.document-meta{
-    text-align: right;
-    font-size: 0.85rem;
+.document-meta {
+    text-align: left;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
-/*Report Sections */
-
-.report-block{
+/* Report Sections */
+.report-block {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
-.block-heading{
-    font-size: 1.1rem;
+
+.block-heading {
+    font-size: 1rem;
     font-weight: 700;
     color: var(--accent-purple);
     display: flex;
@@ -140,15 +122,15 @@
     padding-bottom: 8px;
 }
 
-.metrics-summary-grid{
+.metrics-summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fits, minmax(180px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
 }
 
-.metric-box{
-    padding: 16px;
-    background: rgba(225, 225, 225, 0.03);
+.metric-box {
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     display: flex;
@@ -156,40 +138,89 @@
     gap: 4px;
 }
 
-.metric-box-title{
-    font-size: 0.8rem;
-    color: (--text-secondary);
+.metric-box-title {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
-.metric-box-value{
-    font-size: 1.5rem;
+.metric-box-value {
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
-.doc-table{
+/* Table Wrapper for Mobile Responsiveness */
+.doc-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.doc-table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
     font-size: 0.85rem;
+    min-width: 280px;
 }
 
-.doc-table th, .doc-table td{
+.doc-table th, 
+.doc-table td {
     padding: 10px 12px;
     border-bottom: 1px solid var(--glass-border);
+    white-space: nowrap;
 }
 
-.doc-table th{
+.doc-table th {
     color: var(--text-secondary);
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
 }
 
-.executive-note-box{
-    padding: 16px;
-    padding-left: 4px solid var(--accent-purple);
+.excutive-note-box {
+    padding: 14px;
+    border-left: 4px solid var(--accent-purple);
     background: rgba(139, 92, 246, 0.1);
     border-radius: 0 12px 12px 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1.5;
     color: var(--text-primary);
+}
+
+/* Mobile Media Queries Adjustments */
+@media (max-width: 768px) {
+    .report-generator-container {
+        width: 100%;
+        padding: 0 10px;
+        margin: 10px auto;
+    }
+
+    .report-header-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .report-header-bar > div:last-child {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .report-header-bar button {
+        flex: 1;
+        justify-content: center;
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .preview-panel {
+        padding: 16px;
+    }
+
+    .document-header {
+        flex-direction: column;
+    }
+
+    .document-meta {
+        text-align: left;
+    }
 }
