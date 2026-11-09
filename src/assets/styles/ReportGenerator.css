@@ -47,7 +47,7 @@
     color: var(--text-primary);
 }
 
-/* Fix applied here: Ensures parameters stack cleanly on mobile */
+/* Forces form elements to stack cleanly on mobile */
 .config-panel-top > div:last-child {
     display: flex;
     flex-direction: column;
@@ -161,11 +161,12 @@
     font-weight: 700;
 }
 
-/* Table Wrapper for Mobile Responsiveness */
+/* Table Wrapper for Mobile Responsiveness & Scrolling */
 .doc-table-wrapper {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    margin-bottom: 4px;
 }
 
 .doc-table {
@@ -173,7 +174,7 @@
     border-collapse: collapse;
     text-align: left;
     font-size: 0.85rem;
-    min-width: 280px;
+    min-width: 320px;
 }
 
 .doc-table th, 

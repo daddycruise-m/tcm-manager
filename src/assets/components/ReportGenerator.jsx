@@ -155,7 +155,7 @@ export default function ReportGenerator() {
     };
 
     return (
-        <div className="report-generatortor-container">
+        <div className="report-generator-container">
             {/* 1. Top Header Bar */}
             <div className="glass-card report-header-bar">
                 <div className="report-title-section">
@@ -178,7 +178,7 @@ export default function ReportGenerator() {
                 </div>
             </div>
 
-            {/* 2. Report Parameters Bar (Positioned Top Right After Header) */}
+            {/* 2. Report Parameters Bar */}
             <div className="glass-card config-panel-top" style={{ marginTop: '16px', padding: '20px' }}>
                 <div className="config-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                     <Sliders size={18} color="#8b5cf6" />
@@ -245,7 +245,7 @@ export default function ReportGenerator() {
                 </div>
             </div>
 
-            {/* 3. Printable Document Preview (Full Width Below Controls) */}
+            {/* 3. Printable Document Preview */}
             <div className="preview-panel" ref={reportRef} style={{ marginTop: '20px' }}>
                 <div className="document-header">
                     <div className="document-branding">
@@ -323,38 +323,41 @@ export default function ReportGenerator() {
                     </div>
                 </div>
 
+                {/* Service Unit Strength & Roster Section with Mobile Table Scroll Wrapper */}
                 <div className="report-block">
                     <div className="block-heading">
                         <Briefcase size={18} /> Service Unit Strength & Roster ({selectedMonth})
                     </div>
                     
-                    <table className="doc-table">
-                        <thead>
-                            <tr>
-                                <th>Unit Name</th>
-                                <th>Assigned Workers</th>
-                                <th>Activity Efficiency</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {unitBreakdown.length > 0 ? (
-                                unitBreakdown.map((u, idx) => (
-                                    <tr key={idx}>
-                                        <td style={{ fontWeight: 600 }}>{u.name}</td>
-                                        <td>{u.workers} Workers</td>
-                                        <td style={{ color: '#10b981', fontWeight: 600 }}>{u.activeRate}</td>
-                                    </tr>
-                                ))
-                            ) : (
+                    <div className="doc-table-wrapper">
+                        <table className="doc-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                                        No service units registered yet.
-                                    </td>
+                                    <th>Unit Name</th>
+                                    <th>Assigned Workers</th>
+                                    <th>Activity Efficiency</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+
+                            <tbody>
+                                {unitBreakdown.length > 0 ? (
+                                    unitBreakdown.map((u, idx) => (
+                                        <tr key={idx}>
+                                            <td style={{ fontWeight: 600 }}>{u.name}</td>
+                                            <td>{u.workers} Workers</td>
+                                            <td style={{ color: '#10b981', fontWeight: 600 }}>{u.activeRate}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                            No service units registered yet.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
