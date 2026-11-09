@@ -47,6 +47,19 @@
     color: var(--text-primary);
 }
 
+/* Fix applied here: Ensures parameters stack cleanly on mobile */
+.config-panel-top > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.config-panel-top .form-group {
+    width: 100% !important;
+    grid-column: auto !important;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
