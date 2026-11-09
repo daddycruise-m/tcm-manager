@@ -59,6 +59,7 @@ export default function Members() {
 
   const currentWeek = getWeekKey();
   const windowOpen = isAttendanceWindowOpen();
+  const isCurrentMonthSelected = selectedMonth === currentMonthKey;
 
   const calculateAge = (dobString) => {
     if (!dobString) return 'N/A';
@@ -72,12 +73,12 @@ export default function Members() {
     return age;
   };
 
-  // Helper to extract attendance count for the selected historical month
+  // Helper to extract attendance count strictly from attendance history for the selected month, defaulting to 0
   const getMemberMonthCount = (member) => {
     if (member.attendanceHistory && member.attendanceHistory[selectedMonth] !== undefined) {
       return member.attendanceHistory[selectedMonth];
     }
-    return Number(member.monthAttendances) || 0;
+    return 0; // Strictly returns 0 if no record exists for this historical month
   };
 
   const toggleExpandMember = (memberId) => {
@@ -124,8 +125,13 @@ export default function Members() {
     setIsAddModalOpen(true);
   };
 
-  // Handle Status Selection: 'served' or 'not' (Fully sanitized to prevent undefined Firebase crashes)
+  // Handle Status Selection: 'served' or 'not' (Sanitized against undefined Firebase crashes & locked for historical months)
   const handleStatusSelect = (member, status) => {
+    if (!isCurrentMonthSelected) {
+      alert('Service status updates are locked for historical or non-current months.');
+      return;
+    }
+
     if (!windowOpen) {
       alert('Service status updates are locked from Thursday through Saturday night.');
       return;
@@ -179,10 +185,20 @@ export default function Members() {
     if (!newMember.name) return;
 
     if (editingMember) {
-      updateMember(editingMember.id, {
-        ...editingMember,
-        ...newMember
-      });
+      // Build a clean payload and remove any undefined fields for Firebase
+      const updatedData = {
+        name: newMember.name,
+        gender: newMember.gender,
+        dob: newMember.dob || '',
+        phone: newMember.phone || '',
+        unit: newMember.unit || 'General',
+        address: newMember.address || '',
+        monthAttendances: Number(editingMember.monthAttendances) || 0,
+        weeklyStatus: editingMember.weeklyStatus || {},
+        attendanceHistory: editingMember.attendanceHistory || { [currentMonthKey]: 0 }
+      };
+
+      updateMember(editingMember.id, updatedData);
     } else {
       addMember({
         ...newMember,
@@ -220,7 +236,7 @@ export default function Members() {
           <div>
             <h2 className="members-title">Members Management Directory ({selectedMonth})</h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Real-time attendance logs, historical records, and weekly tracking {windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)'}
+              Real-time attendance logs, historical records, and weekly tracking {!isCurrentMonthSelected ? '🔒 Locked (Historical Month)' : (windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)')}
             </p>
           </div>
         </div>
@@ -362,7 +378,8 @@ export default function Members() {
                           type="button"
                           className={`status-action-btn served-option ${memberWeeklyStatus === 'served' ? 'active-served' : ''}`}
                           onClick={() => handleStatusSelect(member, 'served')}
-                          title={windowOpen ? "Mark as Served" : "Locked (Sun-Wed)"}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
+                          title={!isCurrentMonthSelected ? "Locked (Historical Month)" : (windowOpen ? "Mark as Served" : "Locked (Sun-Wed)")}
                         >
                           <CheckCircle2 size={14} /> Served
                         </button>
@@ -370,7 +387,8 @@ export default function Members() {
                           type="button"
                           className={`status-action-btn not-option ${memberWeeklyStatus === 'not' ? 'active-not' : ''}`}
                           onClick={() => handleStatusSelect(member, 'not')}
-                          title={windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)"}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
+                          title={!isCurrentMonthSelected ? "Locked (Historical Month)" : (windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)")}
                         >
                           <XCircle size={14} /> Not
                         </button>
@@ -451,6 +469,7 @@ export default function Members() {
                           type="button"
                           className={`status-action-btn served-option ${memberWeeklyStatus === 'served' ? 'active-served' : ''}`}
                           onClick={() => handleStatusSelect(member, 'served')}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
                         >
                           <CheckCircle2 size={14} /> Served
                         </button>
@@ -458,6 +477,7 @@ export default function Members() {
                           type="button"
                           className={`status-action-btn not-option ${memberWeeklyStatus === 'not' ? 'active-not' : ''}`}
                           onClick={() => handleStatusSelect(member, 'not')}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
                         >
                           <XCircle size={14} /> Not
                         </button>

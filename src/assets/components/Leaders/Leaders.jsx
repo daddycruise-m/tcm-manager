@@ -59,6 +59,7 @@ export default function Leaders() {
 
   const currentWeek = getWeekKey();
   const windowOpen = isAttendanceWindowOpen();
+  const isCurrentMonthSelected = selectedMonth === currentMonthKey;
 
   const calculateAge = (dobString) => {
     if (!dobString) return 'N/A';
@@ -72,12 +73,12 @@ export default function Leaders() {
     return age;
   };
 
-  // Helper to extract attendance count for the selected historical month
+  // Helper to extract attendance count strictly from attendance history for the selected month, defaulting to 0
   const getLeaderMonthCount = (leader) => {
     if (leader.attendanceHistory && leader.attendanceHistory[selectedMonth] !== undefined) {
       return leader.attendanceHistory[selectedMonth];
     }
-    return Number(leader.monthAttendances) || 0;
+    return 0; // Strictly returns 0 if no record exists for this historical month
   };
 
   const toggleExpandLeader = (leaderId) => {
@@ -124,8 +125,13 @@ export default function Leaders() {
     }
   };
 
-  // Handle Status Selection: 'served' or 'not' (Sanitized against undefined Firebase crashes)
+  // Handle Status Selection: 'served' or 'not' (Sanitized against undefined Firebase crashes & locked for historical months)
   const handleStatusSelect = (leader, status) => {
+    if (!isCurrentMonthSelected) {
+      alert('Service status updates are locked for historical or non-current months.');
+      return;
+    }
+
     if (!windowOpen) {
       alert('Service status updates are locked from Thursday through Saturday night.');
       return;
@@ -173,10 +179,20 @@ export default function Leaders() {
     if (!newLeader.name || !newLeader.position) return;
     
     if (editingLeader) {
-      updateLeader(editingLeader.id, {
-        ...editingLeader,
-        ...newLeader
-      });
+      // Build a clean payload and remove any undefined fields for Firebase
+      const updatedData = {
+        name: newLeader.name,
+        position: newLeader.position,
+        gender: newLeader.gender || 'Male',
+        dob: newLeader.dob || '',
+        phone: newLeader.phone || '',
+        address: newLeader.address || '',
+        monthAttendances: Number(editingLeader.monthAttendances) || 0,
+        weeklyStatus: editingLeader.weeklyStatus || {},
+        attendanceHistory: editingLeader.attendanceHistory || { [currentMonthKey]: 0 }
+      };
+
+      updateLeader(editingLeader.id, updatedData);
     } else {
       addLeader({
         ...newLeader,
@@ -214,7 +230,7 @@ export default function Leaders() {
           <div>
             <h2 className="leaders-title">Leaders Management Hub ({selectedMonth})</h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Track leadership positions, engagements (3-attendance threshold), and active ratios {windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)'}
+              Track leadership positions, engagements (3-attendance threshold), and active ratios {!isCurrentMonthSelected ? '🔒 Locked (Historical Month)' : (windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)')}
             </p>
           </div>
         </div>
@@ -356,7 +372,8 @@ export default function Leaders() {
                           type="button"
                           className={`status-action-btn served-option ${leaderWeeklyStatus === 'served' ? 'active-served' : ''}`}
                           onClick={() => handleStatusSelect(leader, 'served')}
-                          title={windowOpen ? "Mark as Served" : "Locked (Sun-Wed)"}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
+                          title={!isCurrentMonthSelected ? "Locked (Historical Month)" : (windowOpen ? "Mark as Served" : "Locked (Sun-Wed)")}
                         >
                           <CheckCircle2 size={14} /> Served
                         </button>
@@ -364,7 +381,8 @@ export default function Leaders() {
                           type="button"
                           className={`status-action-btn not-option ${leaderWeeklyStatus === 'not' ? 'active-not' : ''}`}
                           onClick={() => handleStatusSelect(leader, 'not')}
-                          title={windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)"}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
+                          title={!isCurrentMonthSelected ? "Locked (Historical Month)" : (windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)")}
                         >
                           <XCircle size={14} /> Not
                         </button>
@@ -451,6 +469,7 @@ export default function Leaders() {
                           type="button"
                           className={`status-action-btn served-option ${leaderWeeklyStatus === 'served' ? 'active-served' : ''}`}
                           onClick={() => handleStatusSelect(leader, 'served')}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
                         >
                           <CheckCircle2 size={14} /> Served
                         </button>
@@ -458,6 +477,7 @@ export default function Leaders() {
                           type="button"
                           className={`status-action-btn not-option ${leaderWeeklyStatus === 'not' ? 'active-not' : ''}`}
                           onClick={() => handleStatusSelect(leader, 'not')}
+                          disabled={!isCurrentMonthSelected || !windowOpen}
                         >
                           <XCircle size={14} /> Not
                         </button>

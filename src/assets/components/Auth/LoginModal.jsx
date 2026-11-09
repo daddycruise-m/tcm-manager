@@ -16,7 +16,7 @@ export default function LoginModal({ isOpen, onClose, role, onLoginSuccess }) {
   const roleTitle = isLeader ? 'Leaders Portal' : 'Workers Portal';
 
   // SPECIFIC PASSCODES FOR EACH PORTAL
-  const EXPECTED_PASSWORD = isLeader ? 'tcl1234567890' : 'tcw1234567890';
+  const EXPECTED_PASSWORD = isLeader ? 'ttcl' : 'ttcw';
 
   const handleCancel = () => {
     setPassword('');

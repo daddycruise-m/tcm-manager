@@ -63,13 +63,14 @@ export default function UnitManager() {
 
     const currentWeek = getWeekKey();
     const windowOpen = isAttendanceWindowOpen();
+    const isCurrentMonthSelected = selectedMonth === currentMonthKey;
 
     // Helper to get worker service count strictly from attendance history for the selected month, defaulting to 0
     const getWorkerMonthCount = (worker) => {
         if (worker.attendanceHistory && worker.attendanceHistory[selectedMonth] !== undefined) {
             return worker.attendanceHistory[selectedMonth];
         }
-        return 0;
+        return 0; // Strictly returns 0 if no record exists for this historical month
     };
 
     const toggleExpandWorker = (workerId) => {
@@ -135,6 +136,11 @@ export default function UnitManager() {
 
     // Handle Status Selection: 'served' or 'not' (Fully sanitized to prevent undefined Firebase crashes)
     const handleStatusSelect = (worker, status) => {
+        if (!isCurrentMonthSelected) {
+            alert('Service status updates are locked for historical or non-current months.');
+            return;
+        }
+
         if (!windowOpen) {
             alert('Service status updates are locked from Thursday through Saturday night.');
             return;
@@ -183,10 +189,20 @@ export default function UnitManager() {
         if (!newWorker.name || !selectedUnitId) return;
 
         if (editingWorker) {
-            updateWorker(editingWorker.id, {
-                ...editingWorker,
-                ...newWorker
-            });
+            // Explicit payload builder preventing undefined entries
+            const updatedData = {
+                name: newWorker.name,
+                gender: newWorker.gender || 'Male',
+                phone: newWorker.phone || '',
+                address: newWorker.address || '',
+                dob: newWorker.dob || '',
+                unitId: editingWorker.unitId || selectedUnitId,
+                monthServices: Number(editingWorker.monthServices) || 0,
+                weeklyStatus: editingWorker.weeklyStatus || {},
+                attendanceHistory: editingWorker.attendanceHistory || { [currentMonthKey]: 0 }
+            };
+
+            updateWorker(editingWorker.id, updatedData);
         } else {
             addWorker({
                 ...newWorker,
@@ -256,7 +272,7 @@ export default function UnitManager() {
                                 <span>Roster: {count} Workers</span>
                                 <span>Active Hub</span>
                             </div>
-                        </div>    
+                        </div>   
                     );
                 })}
             </div>
@@ -267,7 +283,7 @@ export default function UnitManager() {
                     <div>
                         <h3 className="centered-heading">{activeUnit?.logo} {activeUnit?.name} Roster ({selectedMonth})</h3>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }} className="text-center-mobile">
-                            Viewing records for {selectedMonth} {windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)'}
+                            Viewing records for {selectedMonth} {!isCurrentMonthSelected ? '🔒 Locked (Historical Month)' : (windowOpen ? '🟢 Service Window Open' : '🔒 Window Locked (Sun-Wed Only)')}
                         </p>
                     </div>
 
@@ -308,7 +324,8 @@ export default function UnitManager() {
                                                     type="button"
                                                     className={`status-action-btn served-option ${workerWeeklyStatus === 'served' ? 'active-served' : ''}`}
                                                     onClick={() => handleStatusSelect(worker, 'served')}
-                                                    title={windowOpen ? "Mark as Served" : "Locked (Sun-Wed)"}
+                                                    disabled={!isCurrentMonthSelected || !windowOpen}
+                                                    title={!isCurrentMonthSelected ? "Locked (Historical Month)" : (windowOpen ? "Mark as Served" : "Locked (Sun-Wed)")}
                                                 >
                                                     <CheckCircle2 size={14} /> Served
                                                 </button>
@@ -316,7 +333,8 @@ export default function UnitManager() {
                                                     type="button"
                                                     className={`status-action-btn not-option ${workerWeeklyStatus === 'not' ? 'active-not' : ''}`}
                                                     onClick={() => handleStatusSelect(worker, 'not')}
-                                                    title={windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)"}
+                                                    disabled={!isCurrentMonthSelected || !windowOpen}
+                                                    title={!isCurrentMonthSelected ? "Locked (Historical Month)" : (windowOpen ? "Mark as Not Served" : "Locked (Sun-Wed)")}
                                                 >
                                                     <XCircle size={14} /> Not
                                                 </button>
@@ -392,6 +410,7 @@ export default function UnitManager() {
                                                     type="button"
                                                     className={`status-action-btn served-option ${workerWeeklyStatus === 'served' ? 'active-served' : ''}`}
                                                     onClick={() => handleStatusSelect(worker, 'served')}
+                                                    disabled={!isCurrentMonthSelected || !windowOpen}
                                                 >
                                                     <CheckCircle2 size={14} /> Served
                                                 </button>
@@ -399,6 +418,7 @@ export default function UnitManager() {
                                                     type="button"
                                                     className={`status-action-btn not-option ${workerWeeklyStatus === 'not' ? 'active-not' : ''}`}
                                                     onClick={() => handleStatusSelect(worker, 'not')}
+                                                    disabled={!isCurrentMonthSelected || !windowOpen}
                                                 >
                                                     <XCircle size={14} /> Not
                                                 </button>
